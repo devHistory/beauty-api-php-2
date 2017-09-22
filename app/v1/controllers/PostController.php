@@ -55,13 +55,13 @@ class PostController extends ControllerBase
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
         }
 
-        // add viewer
-        $this->postModel->addView($postId, $this->uid);
-
         // get data
         if (!$data = $this->postModel->getPost($postId)) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('no data')])->send();
         }
+
+        // add viewer
+        $this->postModel->addView($postId, $this->uid);
 
         // return
         unset($data->_id);
