@@ -11,6 +11,28 @@ use MongoDB\BSON\ObjectId;
 class Post extends Model
 {
 
+    public function getPost($postId = '')
+    {
+        $mongodb = $this->di['mongodb'];
+        $db = $this->di['config']->mongodb->db;
+
+        return $mongodb->$db->post->findOne([
+            '_id' => new ObjectId($postId)
+        ]);
+    }
+
+
+    // TODO :: 删除附件
+    public function deletePost($postId = '')
+    {
+        $mongodb = $this->di['mongodb'];
+        $db = $this->di['config']->mongodb->db;
+
+        return $mongodb->$db->post->deleteOne([
+            '_id' => new ObjectId($postId)
+        ]);
+    }
+
 
     public function post($uid = '', $text = '', $attach = [])
     {
@@ -34,7 +56,7 @@ class Post extends Model
             // push to timeline
             $this->pushToTimeline($uid, $postData);
 
-            // TODO :: push to feed
+            // TODO :: push to feed queue
 
         } catch (\Exception $e) {
             return false;
@@ -63,7 +85,7 @@ class Post extends Model
     }
 
 
-    public function pushToFeed($uid = '', $postId = '')
+    public function pushToFeedQueue($uid = '', $postId = '')
     {
     }
 

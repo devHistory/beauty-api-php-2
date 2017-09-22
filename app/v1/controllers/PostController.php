@@ -19,11 +19,7 @@ class PostController extends ControllerBase
     }
 
 
-    /**
-     * 发表
-     * $type = ['text', 'picture', 'voice', 'video'];
-     * @return mixed
-     */
+    // 发表
     public function indexAction()
     {
         $type = $this->request->get('type', 'alphanum', 'text');
@@ -43,19 +39,51 @@ class PostController extends ControllerBase
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('post error')])->send();
         }
 
-        return $this->response->setJsonContent(['code' => 0, 'msg' => _('success'), 'data' => $result])->send();
+        return $this->response->setJsonContent([
+            'code' => 0,
+            'msg'  => _('success'),
+            'data' => $result
+        ])->send();
     }
 
 
     // 查看
     public function viewAction()
     {
+        $postId = $this->request->get('postId', 'alphanum');
+        if (!$postId) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
+        }
+
+        if (!$data = $this->postModel->getPost($postId)) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('no data')])->send();
+        }
+
+        unset($data->_id);
+        return $this->response->setJsonContent([
+            'code' => 0,
+            'msg'  => _('success'),
+            'data' => $data
+        ])->send();
     }
 
 
     // 删除
     public function deleteAction()
     {
+        $postId = $this->request->get('postId', 'alphanum');
+        if (!$postId) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
+        }
+
+        if (!$this->postModel->deletePost($postId)) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('fail')])->send();
+        }
+
+        return $this->response->setJsonContent([
+            'code' => 0,
+            'msg'  => _('success')
+        ])->send();
     }
 
 }
