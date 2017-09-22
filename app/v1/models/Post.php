@@ -87,8 +87,9 @@ class Post extends Model
 
     private function pushToTimeLineAdd($uid = '', $postData = [])
     {
-        $postId = $postData['_id']->__toString();
+        $insertData['postId'] = $postData['_id']->__toString();
         unset($postData['_id'], $postData['uid']);
+        $insertData += $postData;
 
         // insert into database
         $mongodb = $this->di['mongodb'];
@@ -96,7 +97,7 @@ class Post extends Model
         return $mongodb->$db->timeLine->updateOne(
             ['_id' => new ObjectId($uid)],
             [
-                '$set'         => ['post.' . $postId => $postData],
+                '$push'        => ['post' => $insertData],
                 '$currentDate' => ['lastModified' => true],
             ],
             ['upsert' => true]
@@ -106,6 +107,15 @@ class Post extends Model
 
     private function pushToTimeLineDelete($uid = '', $postId = '')
     {
+        $mongodb = $this->di['mongodb'];
+        $db = $this->di['config']->mongodb->db;
+        return $mongodb->$db->timeLine->updateOne(
+            ['_id' => new ObjectId($uid)],
+            [
+                '$pull'        => ['post' => ['postId' => $postId]],
+                '$currentDate' => ['lastModified' => true],
+            ]
+        );
     }
 
 
