@@ -85,6 +85,20 @@ class Post extends Model
     }
 
 
+    public function addView($postId = '', $uid = '')
+    {
+        $mongodb = $this->di['mongodb'];
+        $db = $this->di['config']->mongodb->db;
+        $mongodb->$db->post->updateOne(
+            ['_id' => new ObjectId($postId)],
+            [
+                '$inc'      => ['view' => 1],
+                '$addToSet' => ['viewList' => $uid]
+            ]
+        );
+    }
+
+
     private function pushToTimeLineAdd($uid = '', $postData = [])
     {
         $insertData['postId'] = $postData['_id']->__toString();
