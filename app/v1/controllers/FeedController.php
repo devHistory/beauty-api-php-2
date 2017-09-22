@@ -4,7 +4,7 @@
 namespace MyApp\V1\Controllers;
 
 
-class HomeController extends ControllerBase
+class FeedController extends ControllerBase
 {
 
     // 朋友圈
