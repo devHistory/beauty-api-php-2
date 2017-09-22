@@ -23,21 +23,38 @@ class Post extends Model
 
 
     // TODO :: 删除附件
-    public function deletePost($postId = '')
+    public function deletePost($uid = '', $postId = '')
     {
+        if (!$post = $this->getPost($postId)) {
+            return false;
+        }
+
+        // 检查权限
+        if ($post->uid != $uid) {
+            return false;
+        }
+
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
 
-        return $mongodb->$db->post->deleteOne([
+        $mongodb->$db->post->deleteOne([
             '_id' => new ObjectId($postId)
         ]);
+
+        // push
+        $this->pushToTimeLineDelete($uid, $postId);
+        $this->pushToFeedDelete($uid, $postId);
+
+        return true;
     }
 
 
     public function post($uid = '', $text = '', $attach = [])
     {
-        // check
-        if (!$uid || !in_array(array_keys($attach)['0'], ['text', 'picture', 'voice', 'video'])) {
+        if (!$uid) {
+            return false;
+        }
+        if ($attach && !in_array(array_keys($attach)['0'], ['text', 'picture', 'voice', 'video'])) {
             return false;
         }
 
@@ -46,17 +63,19 @@ class Post extends Model
         $db = $this->di['config']->mongodb->db;
         $id = new ObjectId();
         try {
-            $postData = array_filter([
-                    '_id'  => $id,
-                    'uid'  => $uid,
-                    'text' => $text,
-                ] + $attach);
+            $postData = [
+                '_id'  => $id,
+                'uid'  => $uid,
+                'text' => $text,
+            ];
+            if ($attach) {
+                $postData = array_filter($postData + $attach);
+            }
             $mongodb->$db->post->insertOne($postData);
 
-            // push to timeline
-            $this->pushToTimeline($uid, $postData);
-
-            // TODO :: push to feed queue
+            // push
+            $this->pushToTimeLineAdd($uid, $postData);
+            $this->pushToFeedAdd($uid, $id->__toString());
 
         } catch (\Exception $e) {
             return false;
@@ -66,7 +85,7 @@ class Post extends Model
     }
 
 
-    public function pushToTimeline($uid = '', $postData = [])
+    private function pushToTimeLineAdd($uid = '', $postData = [])
     {
         $postId = $postData['_id']->__toString();
         unset($postData['_id'], $postData['uid']);
@@ -74,7 +93,7 @@ class Post extends Model
         // insert into database
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
-        return $mongodb->$db->timeline->updateOne(
+        return $mongodb->$db->timeLine->updateOne(
             ['_id' => new ObjectId($uid)],
             [
                 '$set'         => ['post.' . $postId => $postData],
@@ -85,7 +104,17 @@ class Post extends Model
     }
 
 
-    public function pushToFeedQueue($uid = '', $postId = '')
+    private function pushToTimeLineDelete($uid = '', $postId = '')
+    {
+    }
+
+
+    private function pushToFeedAdd($uid = '', $postId = '')
+    {
+    }
+
+
+    private function pushToFeedDelete($uid, $postId)
     {
     }
 

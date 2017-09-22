@@ -76,7 +76,7 @@ class PostController extends ControllerBase
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
         }
 
-        if (!$this->postModel->deletePost($postId)) {
+        if (!$this->postModel->deletePost($this->uid, $postId)) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('fail')])->send();
         }
 
