@@ -23,19 +23,34 @@ class PostController extends ControllerBase
     public function indexAction()
     {
         $type = $this->request->get('type', 'alphanum', 'text');
-        $text = $this->request->get('text', 'string', '');
+        $content = $this->request->get('content', 'string', '');
         $file = $this->request->get('file');
+        $location = $this->request->get('location', 'string', '');
+        $showLocation = $this->request->get('showLocation', 'int!', 1);
 
         // check
-        if ($type == 'text' && (!$text || $file)) {
+        if ($type == 'text' && (!$content || $file)) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
         }
         if ($type != 'text' && !$file) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
         }
+        if (!in_array($type, ['text', 'picture', 'voice', 'video'])) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
+        }
+
+        // attach
+        $attach = [];
+        if ($location) {
+            $attach['location'] = $location;
+            $attach['showLocation'] = $showLocation ? true : false;
+        }
+        if ($file) {
+            $attach += [$type => $file];
+        }
 
         // post
-        if (!$result = $this->postModel->post($this->uid, $text, $file ? [$type => $file] : null)) {
+        if (!$result = $this->postModel->post($this->uid, $content, $attach)) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('post error')])->send();
         }
 

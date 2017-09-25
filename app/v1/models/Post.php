@@ -49,12 +49,9 @@ class Post extends Model
     }
 
 
-    public function post($uid = '', $text = '', $attach = [])
+    public function post($uid = '', $content = '', $attach = [])
     {
         if (!$uid) {
-            return false;
-        }
-        if ($attach && !in_array(array_keys($attach)['0'], ['text', 'picture', 'voice', 'video'])) {
             return false;
         }
 
@@ -64,13 +61,11 @@ class Post extends Model
         $id = new ObjectId();
         try {
             $postData = [
-                '_id'  => $id,
-                'uid'  => $uid,
-                'text' => $text,
+                '_id'     => $id,
+                'uid'     => $uid,
+                'content' => $content,
             ];
-            if ($attach) {
-                $postData = array_filter($postData + $attach);
-            }
+            $postData = $postData + $attach;
             $mongodb->$db->post->insertOne($postData);
 
             // push
