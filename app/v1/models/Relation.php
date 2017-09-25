@@ -65,6 +65,23 @@ class Relation extends Model
 
     private function getMoreInfo($uidList = [])
     {
+        if (!$uidList) {
+            return [];
+        }
+
+        $accountModel = new Account();
+        $list = [];
+        foreach ($uidList as $uid) {
+            if (!$account = $accountModel->_getAccountDataFromCache($uid)) {
+                continue;
+            }
+            $list[] = [
+                'uid'  => $uid,
+                'name' => $account['name'],
+                'desc' => $account['desc'],
+            ];
+        }
+        return $list;
     }
 
 }

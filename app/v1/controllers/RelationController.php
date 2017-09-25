@@ -23,6 +23,9 @@ class RelationController extends ControllerBase
     public function followAction()
     {
         $uid = $this->request->get('uid', 'alphanum', '');
+        if (!$uid) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('fail')])->send();
+        }
 
         $this->relationModel->follow($uid, $this->uid);
 
@@ -37,6 +40,9 @@ class RelationController extends ControllerBase
     public function unfollowAction()
     {
         $uid = $this->request->get('uid', 'alphanum', '');
+        if (!$uid) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('fail')])->send();
+        }
 
         $this->relationModel->unfollow($uid, $this->uid);
 

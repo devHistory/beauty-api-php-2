@@ -67,7 +67,7 @@ class ControllerBase extends Controller
     }
 
 
-    private function checkAccessToken()
+    protected function checkAccessToken()
     {
         try {
             JWT::$leeway = 300;
