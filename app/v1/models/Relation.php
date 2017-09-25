@@ -49,8 +49,17 @@ class Relation extends Model
     public function listFollowers($uid = '')
     {
         $key = 'followers|' . $uid;
+
+        // get from cache
+        $data = $this->di['cache']->get('_' . $key);
+        if ($data) {
+            return json_decode($data, true);
+        }
+
         $result = $this->di['redis']->sMembers($key);
-        return $this->getMoreInfo($result);
+        $data = $this->getMoreAccountInfo($result);
+        $this->di['cache']->set('_' . $key, json_encode($data), 86400 * 1);
+        return $data;
     }
 
 
@@ -58,12 +67,21 @@ class Relation extends Model
     public function listFollowing($uid = '')
     {
         $key = 'following|' . $uid;
+
+        // get from cache
+        $data = $this->di['cache']->get('_' . $key);
+        if ($data) {
+            return json_decode($data, true);
+        }
+
         $result = $this->di['redis']->sMembers($key);
-        return $this->getMoreInfo($result);
+        $data = $this->getMoreAccountInfo($result);
+        $this->di['cache']->set('_' . $key, json_encode($data), 86400 * 1);
+        return $data;
     }
 
 
-    private function getMoreInfo($uidList = [])
+    private function getMoreAccountInfo($uidList = [])
     {
         if (!$uidList) {
             return [];
