@@ -24,6 +24,10 @@ class Relation extends Model
         $key = 'following|' . $uid;
         $this->di['redis']->sAdd($key, $following);
 
+        // delete from cache
+        $this->di['cache']->del('_following|' . $uid);
+        $this->di['cache']->del('_followers|' . $following);
+
         return true;
     }
 
@@ -40,6 +44,10 @@ class Relation extends Model
 
         $key = 'following|' . $uid;
         $this->di['redis']->sRem($key, $following);
+
+        // delete from cache
+        $this->di['cache']->del('_following|' . $uid);
+        $this->di['cache']->del('_followers|' . $following);
 
         return true;
     }

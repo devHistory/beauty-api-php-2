@@ -23,7 +23,7 @@ class RelationController extends ControllerBase
     public function followAction()
     {
         $uid = $this->request->get('uid', 'alphanum', '');
-        if (!$uid) {
+        if (!$uid || ($uid == $this->uid)) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('fail')])->send();
         }
 
