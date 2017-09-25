@@ -42,7 +42,7 @@ class Post extends Model
         ]);
 
         // push
-        $this->pushToTimeLineDelete($uid, $postId);
+        $this->pushToTimelineDelete($uid, $postId);
         $this->pushToFeedDelete($uid, $postId);
 
         return true;
@@ -69,7 +69,7 @@ class Post extends Model
             $mongodb->$db->post->insertOne($postData);
 
             // push
-            $this->pushToTimeLineAdd($uid, $postData);
+            $this->pushToTimelineAdd($uid, $postData);
             $this->pushToFeedAdd($uid, $id->__toString());
 
         } catch (\Exception $e) {
@@ -94,7 +94,7 @@ class Post extends Model
     }
 
 
-    private function pushToTimeLineAdd($uid = '', $postData = [])
+    private function pushToTimelineAdd($uid = '', $postData = [])
     {
         $insertData['postId'] = $postData['_id']->__toString();
         unset($postData['_id'], $postData['uid']);
@@ -103,26 +103,26 @@ class Post extends Model
         // insert into database
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
-        return $mongodb->$db->timeLine->updateOne(
+        return $mongodb->$db->timeline->updateOne(
             ['_id' => new ObjectId($uid)],
             [
                 '$push'        => ['post' => $insertData],
-                '$currentDate' => ['lastModified' => true],
+                '$currentDate' => ['modifyTime' => true],
             ],
             ['upsert' => true]
         );
     }
 
 
-    private function pushToTimeLineDelete($uid = '', $postId = '')
+    private function pushToTimelineDelete($uid = '', $postId = '')
     {
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
-        return $mongodb->$db->timeLine->updateOne(
+        return $mongodb->$db->timeline->updateOne(
             ['_id' => new ObjectId($uid)],
             [
                 '$pull'        => ['post' => ['postId' => $postId]],
-                '$currentDate' => ['lastModified' => true],
+                '$currentDate' => ['modifyTime' => true],
             ]
         );
     }
