@@ -15,6 +15,7 @@ use Phalcon\DI\FactoryDefault,
     Phalcon\Cache\Frontend\Data as FrontData,
     Phalcon\Cache\Backend\File as FileCache,
     Phalcon\Cache\Backend\Redis as RedisCache,
+    MyApp\Services\Component,
     Symfony\Component\Yaml\Yaml as SFYaml,
     MongoDB\Client as MongoDBClient;
 
@@ -91,6 +92,11 @@ $di['eventsManager']->attach('db', function ($event, $connection) use ($di) {
         }
     }
 });
+
+
+$di->set('component', function () use ($di) {
+    return new Component($di);
+}, true);
 
 
 $di->set('cache', function () use ($di) {
