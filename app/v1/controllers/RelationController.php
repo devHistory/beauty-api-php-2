@@ -19,6 +19,55 @@ class RelationController extends ControllerBase
     }
 
 
+    // 添加好友
+    public function addAction()
+    {
+        $uid = $this->request->get('uid', 'alphanum', '');
+        if (!$uid || ($uid == $this->uid)) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('fail')])->send();
+        }
+
+        $this->relationModel->addFriend($uid, $this->uid);
+
+        return $this->response->setJsonContent([
+            'code' => 0,
+            'msg'  => _('success')
+        ])->send();
+    }
+
+
+    // 删除好友
+    public function deleteAction()
+    {
+        $uid = $this->request->get('uid', 'alphanum', '');
+        if (!$uid) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('fail')])->send();
+        }
+
+        $this->relationModel->deleteFriend($uid, $this->uid);
+
+        return $this->response->setJsonContent([
+            'code' => 0,
+            'msg'  => _('success')
+        ])->send();
+    }
+
+
+    // 好友列表
+    public function friendsAction()
+    {
+        $data = $this->relationModel->listFriends($this->uid);
+        return $this->response->setJsonContent([
+            'code' => 0,
+            'msg'  => _('success'),
+            'data' => [
+                'count' => count($data),
+                'list'  => $data
+            ]
+        ])->send();
+    }
+
+
     // 关注
     public function followAction()
     {
