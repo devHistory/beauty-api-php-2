@@ -76,10 +76,14 @@ class PostController extends ControllerBase
         }
 
         // add viewer
-        $this->postModel->addView($postId, $this->uid);
+        if ($data->uid != $this->uid) {
+            $this->postModel->addViewer($postId, $this->uid);
+        }
 
         // return
         unset($data->_id);
+        $data->comment = $this->component->fillUserInfo($data->comment, 'uid', ['name']);
+        $data->viewList = $this->component->fillUserInfo($data->viewList, null, ['name']);
         return $this->response->setJsonContent([
             'code' => 0,
             'msg'  => _('success'),
