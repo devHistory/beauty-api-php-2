@@ -130,6 +130,9 @@ class Component
                 continue;
             }
             foreach ($field as $f) {
+                if (empty($dict[$v[$key]][$f])) {
+                    continue;
+                }
                 $data[$k][$f] = $dict[$v[$key]][$f];
             }
         }
