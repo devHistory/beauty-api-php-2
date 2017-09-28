@@ -49,6 +49,10 @@ class Component
      */
     public function fillUserFromCache($uid = [], $fields = ['name'])
     {
+        if (!$uid) {
+            return [];
+        }
+
         // Get From Cache
         $cacheKeys = [];
         foreach ($uid as $u) {
