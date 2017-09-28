@@ -24,6 +24,7 @@ class PostController extends ControllerBase
     {
         $type = $this->request->get('type', 'alphanum', 'text');
         $content = $this->request->get('content', 'string', '');
+        $nobody = $this->request->get('nobody', 'int!', 0);
         $file = $this->request->get('file');
         $location = $this->request->get('location', 'string', '');
         $showLocation = $this->request->get('showLocation', 'int!', 1);
@@ -47,6 +48,9 @@ class PostController extends ControllerBase
         }
         if ($file) {
             $attach += [$type => $file];
+        }
+        if ($nobody) {
+            $attach += ['nobody' => 1];
         }
 
         // post

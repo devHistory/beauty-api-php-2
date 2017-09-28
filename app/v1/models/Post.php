@@ -44,9 +44,10 @@ class Post extends Model
             $mongodb->$db->post->insertOne($postData);
 
             // push
-            $this->pushToTimeline('add', $uid, $postData);
-            $this->pushToFeed('add', $uid, $id->__toString());
-
+            if (empty($postData['nobody'])) {
+                $this->pushToTimeline('add', $uid, $postData);
+                $this->pushToFeed('add', $uid, $id->__toString());
+            }
         } catch (\Exception $e) {
             return false;
         }
