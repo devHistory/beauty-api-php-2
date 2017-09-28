@@ -58,14 +58,28 @@ class Account extends Model
     }
 
 
-    // 获取账号
-    public function getAccountById($id = null)
+    /**
+     * 获取账号
+     * @param null $id
+     * @param array $keys
+     * @return bool|array
+     */
+    public function getAccountById($id = null, $keys = [])
     {
         if (!is_object($id)) {
             $id = new ObjectId($id);
         }
+
+        // 返回字段
+        $keyReturn = [];
+        if ($keys) {
+            foreach ($keys as $v) {
+                $keyReturn[$v] = 1;
+            }
+        }
+
         $db = $this->di['config']->mongodb->db;
-        if (!($result = $this->di['mongodb']->$db->accounts->findOne(['_id' => $id]))) {
+        if (!($result = $this->di['mongodb']->$db->accounts->findOne(['_id' => $id], ['projection' => $keyReturn]))) {
             return false;
         }
         return $result;

@@ -42,6 +42,66 @@ class Component
 
 
     /**
+     * 填充用户信息 - 从缓存获取
+     * @param array $uid
+     * @param array $fields
+     * @return array
+     */
+    public function fillUserFromCache($uid = [], $fields = ['name'])
+    {
+        // Get From Cache
+        $cacheKeys = [];
+        foreach ($uid as $u) {
+            $cacheKeys[] = '_account|' . $u;
+        }
+        $cacheData = $this->cache->mget($cacheKeys);
+        $dataDict = [];
+        foreach ($cacheData as $k => $v) {
+            if (!$v) {
+                $miss[] = $uid[$k];
+                continue;
+            }
+            $dataDict[$uid[$k]] = json_decode($v, true);
+        }
+
+        // 查询 MongoDB
+        if (!empty($miss)) {
+            // 缓存键名
+            $projection = ['name' => 1, 'gender' => 1, 'account' => 1, 'desc' => 1, 'level' => 1, 'uuid' => 1];
+
+            $uidList = [];
+            foreach ($miss as $u) {
+                $uidList[] = new ObjectId($u);
+            }
+
+            $db = $this->config->mongodb->db;
+            $accounts = $this->mongodb->$db->accounts->find(
+                ['_id' => ['$in' => $uidList]],
+                ['projection' => $projection]
+            );
+            foreach ($accounts as $account) {
+                $oid = $account->_id->__toString();
+                $this->cache->set('_account|' . $oid, json_encode($account), 86400 * 14);
+                $dataDict[$oid] = $account;
+            }
+        }
+
+        $result = [];
+        foreach ($uid as $u) {
+            $d = [];
+            foreach ($fields as $f) {
+                if (empty($dataDict[$u][$f])) {
+                    continue;
+                }
+                $d[$f] = $dataDict[$u][$f];
+            }
+            $result[] = ['uid' => $u] + $d;
+        }
+        return $result;
+    }
+
+
+    /**
      * 填充用户信息 - 昵称签名
      * @param null $data
      * @param null $key
