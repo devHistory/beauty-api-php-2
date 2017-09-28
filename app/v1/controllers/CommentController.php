@@ -32,7 +32,7 @@ class CommentController extends ControllerBase
 
         return $this->response->setJsonContent([
             'code' => 0,
-            'msg' => _('success'),
+            'msg'  => _('success'),
         ])->send();
     }
 
@@ -46,6 +46,15 @@ class CommentController extends ControllerBase
     // 删除
     public function deleteAction()
     {
+        $id = $this->request->get('id', 'alphanum');
+        if (!$this->commentModel->deleteComment($id, $this->uid)) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('fail')])->send();
+        }
+
+        return $this->response->setJsonContent([
+            'code' => 0,
+            'msg'  => _('success'),
+        ])->send();
     }
 
 }

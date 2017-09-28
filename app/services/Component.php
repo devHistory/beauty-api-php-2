@@ -117,6 +117,9 @@ class Component
         foreach ($data as $value) {
             $uid[] = $value->$key;
         }
+        if (empty($uid)) {
+            return [];
+        }
         $accounts = $this->fillUserFromCache($uid, $field);
 
         $dict = [];

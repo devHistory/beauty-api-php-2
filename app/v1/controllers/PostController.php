@@ -86,8 +86,12 @@ class PostController extends ControllerBase
 
         // return
         unset($data->_id);
-        $data->comment = $this->component->fillUserByKey($data->comment, 'uid', ['name']);
-        $data->viewList = $this->component->fillUserFromCache($data->viewList, ['name']);
+        if (isset($data->commentList)) {
+            $data->commentList = $this->component->fillUserByKey($data->commentList, 'uid', ['name']);
+        }
+        if (isset($data->viewList)) {
+            $data->viewList = $this->component->fillUserFromCache($data->viewList, ['name']);
+        }
         return $this->response->setJsonContent([
             'code' => 0,
             'msg'  => _('success'),
