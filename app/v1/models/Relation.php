@@ -49,7 +49,7 @@ class Relation extends Model
         }
 
         $result = $this->di['redis']->sMembers($key);
-        $data = $this->getMoreAccountInfo($result);
+        $data = $this->di['component']->fillUserFromCache($result, ['name', 'level', 'desc']);
         $this->di['cache']->set('_' . $key, json_encode($data), 86400 * 1);
         return $data;
     }
@@ -109,7 +109,7 @@ class Relation extends Model
         }
 
         $result = $this->di['redis']->sMembers($key);
-        $data = $this->getMoreAccountInfo($result);
+        $data = $this->di['component']->fillUserFromCache($result, ['name', 'level', 'desc']);
         $this->di['cache']->set('_' . $key, json_encode($data), 86400 * 1);
         return $data;
     }
@@ -127,31 +127,9 @@ class Relation extends Model
         }
 
         $result = $this->di['redis']->sMembers($key);
-        $data = $this->getMoreAccountInfo($result);
+        $data = $this->di['component']->fillUserFromCache($result, ['name', 'level', 'desc']);
         $this->di['cache']->set('_' . $key, json_encode($data), 86400 * 1);
         return $data;
-    }
-
-
-    private function getMoreAccountInfo($uidList = [])
-    {
-        if (!$uidList) {
-            return [];
-        }
-
-        $accountModel = new Account();
-        $list = [];
-        foreach ($uidList as $uid) {
-            if (!$account = $accountModel->_getAccountDataFromCache($uid)) {
-                continue;
-            }
-            $list[] = [
-                'uid'  => $uid,
-                'name' => $account['name'],
-                'desc' => $account['desc'],
-            ];
-        }
-        return $list;
     }
 
 }

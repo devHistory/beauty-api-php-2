@@ -4,8 +4,6 @@
 namespace MyApp\V1\Controllers;
 
 
-use MyApp\V1\Models\Account;
-
 class InitController extends ControllerBase
 {
 
@@ -23,8 +21,7 @@ class InitController extends ControllerBase
 
         parent::checkAccessToken();
 
-        $accountModel = new Account();
-        $accountModel->_getAccountDataFromCache($this->uid);
+        $this->component->fillUserFromCache([$this->uid]);
     }
 
 }
