@@ -22,6 +22,39 @@ class Component
 
 
     /**
+     * 积分等级
+     * @param string $uid
+     * @param int $score
+     * @param string $type
+     */
+    public function score($uid = '', $score = 0, $type = '')
+    {
+        $newScore = $this->redis->zIncrBy('score', $score, $uid);
+        $rule = $this->config->level->toArray();
+        krsort($rule);
+        $level = 0;
+        foreach ($rule as $lv => $lvScore) {
+            if ($newScore >= $lvScore) {
+                $level = $lv;
+                break;
+            }
+        }
+
+        // update level
+        if ($newScore - $score < $rule[$level]) {
+            $mongodb = $this->di['mongodb'];
+            $db = $this->di['config']->mongodb->db;
+            $mongodb->$db->accounts->updateOne(
+                ['_id' => new ObjectId($uid)],
+                ['$set' => ['level' => $level]]
+            );
+        }
+
+        // TODO :: logs
+    }
+
+
+    /**
      * 排行榜
      * rankHomeView | rankReward | rankContribute | rankPostLike | rankPostComment | rankPostView
      *
