@@ -5,6 +5,9 @@ namespace MyApp\Services;
 
 
 use MongoDB\BSON\ObjectId;
+use Phalcon\Config;
+use Phalcon\Config\Adapter\Yaml;
+use Symfony\Component\Yaml\Yaml as SFYaml;
 
 class Component
 {
@@ -22,6 +25,27 @@ class Component
 
 
     /**
+     * 获取规则配置
+     * @return mixed
+     */
+    private function getRules()
+    {
+        $data = $this->cache->get('_rules');
+        if ($data) {
+            return json_decode($data, true);
+        }
+        if (function_exists('yaml_parse_file')) {
+            $config = new Yaml(APP_DIR . "/config/rule.yml");
+        }
+        else {
+            $config = new Config(SFYaml::parse(file_get_contents(APP_DIR . "/config/rule.yml")));
+        }
+        $this->cache->set('_rules', json_encode($config), 86400);
+        return $config->toArray();
+    }
+
+
+    /**
      * 积分等级
      * @param string $uid
      * @param int $score
@@ -30,7 +54,7 @@ class Component
     public function score($uid = '', $score = 0, $type = '')
     {
         $newScore = $this->redis->zIncrBy('score', $score, $uid);
-        $rule = $this->config->level->toArray();
+        $rule = $this->getRules()['level'];
         krsort($rule);
         $level = 0;
         foreach ($rule as $lv => $lvScore) {
