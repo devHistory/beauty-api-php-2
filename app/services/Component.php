@@ -199,4 +199,23 @@ class Component
         return $data;
     }
 
+
+    /**
+     * 签名
+     * @param array $data
+     * @param string $signKey
+     * @param string $as
+     * @param string $di
+     * @return string
+     */
+    public function createSign($data = array(), $signKey = '', $as = '=', $di = '&')
+    {
+        ksort($data);
+        $string = '';
+        foreach ($data as $key => $value) {
+            $string .= "$key{$as}$value{$di}";
+        }
+        return md5(rtrim($string, $di) . $signKey);
+    }
+
 }

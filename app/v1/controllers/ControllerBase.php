@@ -60,7 +60,7 @@ class ControllerBase extends Controller
         // check signature
         $data = $this->request->get();
         unset($data['_url']);
-        if ($signature != $this->utilsService->createSign($data, $this->config->setting->signKey)) {
+        if ($signature != $this->component->createSign($data, $this->config->setting->signKey)) {
             $this->response->setJsonContent(['code' => 1, 'msg' => _('sign error')])->send();
             exit();
         }
