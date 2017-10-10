@@ -43,7 +43,7 @@ class ControllerBase extends Controller
     private function check()
     {
         $timestamp = $this->request->get('time');
-        $signature = $this->request->get('sign');
+        $signature = $this->request->getHeader('sign');
 
         // check parameter
         if (!$timestamp || !$signature) {
@@ -59,7 +59,7 @@ class ControllerBase extends Controller
 
         // check signature
         $data = $this->request->get();
-        unset($data['sign'], $data['_url']);
+        unset($data['_url']);
         if ($signature != $this->utilsService->createSign($data, $this->config->setting->signKey)) {
             $this->response->setJsonContent(['code' => 1, 'msg' => _('sign error')])->send();
             exit();
@@ -72,7 +72,7 @@ class ControllerBase extends Controller
         try {
             JWT::$leeway = 300;
             $decoded = JWT::decode(
-                $this->request->get('token'),
+                $this->request->getHeader('token'),
                 $this->config->setting->signKey,
                 array('HS256')
             );
