@@ -110,6 +110,12 @@ class Component
             return [];
         }
 
+        $oneLine = false;
+        if (is_string($uid)) {
+            $oneLine = true;
+            $uid = [$uid];
+        }
+
         // Get From Cache
         $cacheKeys = [];
         foreach ($uid as $u) {
@@ -166,6 +172,9 @@ class Component
                 $d[$f] = $dataDict[$u][$f];
             }
             $result[] = ['uid' => $u] + $d;
+        }
+        if ($oneLine == true) {
+            return array_pop($result);
         }
         return $result;
     }
