@@ -128,7 +128,16 @@ class Component
         // 查询 MongoDB
         if (!empty($miss)) {
             // 缓存键名
-            $projection = ['name' => 1, 'gender' => 1, 'account' => 1, 'desc' => 1, 'level' => 1, 'uuid' => 1];
+            $projection = [
+                'name'      => 1,
+                'gender'    => 1,
+                'age'       => 1,
+                'certified' => 1,
+                'level'     => 1,
+                'desc'      => 1,
+                'account'   => 1,
+                'uuid'      => 1
+            ];
 
             $uidList = [];
             foreach ($miss as $u) {

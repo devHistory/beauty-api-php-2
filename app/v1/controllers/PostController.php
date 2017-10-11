@@ -44,7 +44,7 @@ class PostController extends ControllerBase
         $attach = [];
         if ($location) {
             $attach['location'] = $location;
-            $attach['showLocation'] = $showLocation ? true : false;
+            $attach['showLocation'] = $showLocation ? 1 : 0;
         }
         if ($file) {
             $attach += [$type => $file];
@@ -87,10 +87,12 @@ class PostController extends ControllerBase
         // return
         unset($data->_id);
         if (isset($data->commentList)) {
-            $data->commentList = $this->component->fillUserByKey($data->commentList, 'uid', ['name']);
+            $data->commentList = $this->component->fillUserByKey(
+                $data->commentList, 'uid', ['name', 'gender', 'level']
+            );
         }
         if (isset($data->viewList)) {
-            $data->viewList = $this->component->fillUserFromCache($data->viewList, ['name']);
+            $data->viewList = $this->component->fillUserFromCache($data->viewList, ['name', 'gender', 'level']);
         }
         return $this->response->setJsonContent([
             'code' => 0,
