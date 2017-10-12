@@ -140,6 +140,7 @@ class Component
                 'age'       => 1,
                 'certified' => 1,
                 'level'     => 1,
+                'avatar'    => 1,
                 'desc'      => 1,
                 'account'   => 1,
                 'uuid'      => 1
@@ -190,7 +191,7 @@ class Component
     public function fillUserByKey($data = null, $key = null, $field = ['name'])
     {
         foreach ($data as $value) {
-            $uid[] = $value->$key;
+            $uid[] = $value[$key];
         }
         if (empty($uid)) {
             return [];

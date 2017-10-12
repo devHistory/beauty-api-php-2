@@ -24,10 +24,10 @@ class PostController extends ControllerBase
     {
         $type = $this->request->get('type', 'alphanum', 'text');
         $content = $this->request->get('content', 'string', '');
-        $nobody = $this->request->get('nobody', 'int!', 0);
         $file = $this->request->get('file');
         $location = $this->request->get('location', 'string', '');
-        $showLocation = $this->request->get('showLocation', 'int!', 1);
+        $locationShow = (int)$this->request->get('locationShow');
+        $nobody = (int)$this->request->get('nobody');
 
         // check
         if ($type == 'text' && (!$content || $file)) {
@@ -44,7 +44,7 @@ class PostController extends ControllerBase
         $attach = [];
         if ($location) {
             $attach['location'] = $location;
-            $attach['showLocation'] = $showLocation ? 1 : 0;
+            $attach['locationShow'] = $locationShow ? 1 : 0;
         }
         if ($file) {
             $attach += [$type => $file];
@@ -75,25 +75,46 @@ class PostController extends ControllerBase
         }
 
         // get data
-        if (!$data = $this->postModel->getPost($postId)) {
+        if (!$post = $this->postModel->getPost($postId)) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('no data')])->send();
         }
 
         // add viewer
-        if ($data->uid != $this->uid) {
+        if ($post['uid'] != $this->uid) {
             $this->postModel->addViewer($postId, $this->uid);
         }
 
-        // return
-        unset($data->_id);
-        if (isset($data->commentList)) {
-            $data->commentList = $this->component->fillUserByKey(
-                $data->commentList, 'uid', ['name', 'gender', 'level']
+        // 合并数据
+        $data = $this->component->fillUserFromCache($post->uid, ['name', 'gender', 'level', 'avatar']);
+        $data['postId'] = $postId;
+        foreach ($post as $k => $info) {
+            if (isset($data[$k])) {
+                continue;
+            }
+            $data[$k] = $info;
+        }
+        unset($post, $data['_id']);
+
+        // 匿名隐藏
+        if (!empty($data['nobody'])) {
+            $data['uid'] = '';
+            $data['name'] = '匿名用户';
+            $data['avatar'] = '';
+        }
+
+        // 评论列表
+        if (isset($data['commentList'])) {
+            $data['commentList'] = $this->component->fillUserByKey(
+                $data['commentList'], 'uid', ['name', 'gender', 'level', 'avatar']
             );
         }
-        if (isset($data->viewList)) {
-            $data->viewList = $this->component->fillUserFromCache($data->viewList, ['name', 'gender', 'level']);
+        // 查看列表
+        if (isset($data['viewList'])) {
+            $data['viewList'] = $this->component->fillUserFromCache(
+                $data['viewList'], ['name', 'gender', 'level', 'avatar']
+            );
         }
+        // 返回
         return $this->response->setJsonContent([
             'code' => 0,
             'msg'  => _('success'),
