@@ -85,4 +85,22 @@ class Account extends Model
         return $result;
     }
 
+
+    /**
+     * 修改账号信息
+     * @param null $uid
+     * @param array $data
+     * @return bool
+     */
+    public function setAccount($uid = null, $data = [])
+    {
+        $mongodb = $this->di['mongodb'];
+        $db = $this->di['config']->mongodb->db;
+        $mongodb->$db->accounts->updateOne(
+            ['_id' => new ObjectId($uid)],
+            ['$set' => $data]
+        );
+        return true;
+    }
+
 }
