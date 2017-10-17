@@ -59,6 +59,51 @@ class Account extends Model
 
 
     /**
+     * 设置密码
+     * @param string $uid
+     * @param string $oldPass
+     * @param string $newPass
+     * @return bool
+     */
+    public function setPass($uid = '', $oldPass = '', $newPass = '')
+    {
+        if (!($account = $this->getAccountById($uid, ['account']))) {
+            return false;
+        }
+        $_id = $account['account'];
+        $db = $this->di['config']->mongodb->db;
+        $loginData = $this->di['mongodb']->$db->login->findOne(['_id' => $_id]);
+
+        // 首次设置密码
+        if (empty($oldPass) && empty($loginData['password'])) {
+            $this->di['mongodb']->$db->login->updateOne(
+                ['_id' => $_id],
+                [
+                    '$set' => ['password' => password_hash($newPass, PASSWORD_DEFAULT)]
+                ]
+            );
+            return true;
+        }
+
+        // 修改密码
+        if ($oldPass && !empty($loginData['password'])) {
+            if (!password_verify($oldPass, $loginData['password'])) {
+                return false;
+            }
+            $this->di['mongodb']->$db->login->updateOne(
+                ['_id' => $_id],
+                [
+                    '$set' => ['password' => password_hash($newPass, PASSWORD_DEFAULT)]
+                ]
+            );
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
      * 获取账号
      * @param null $id
      * @param array $keys

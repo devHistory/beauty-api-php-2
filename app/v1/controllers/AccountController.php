@@ -41,6 +41,29 @@ class AccountController extends ControllerBase
     }
 
 
+    // 设置密码
+    public function setPassAction()
+    {
+        $old = $this->request->get('old', 'string', 'trim');
+        $pass = $this->request->get('pass', 'string', 'trim');
+        if ($pass == $old) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('same as the old password')])->send();
+        }
+
+        // 复杂度
+        if ((strlen($pass) < 6) || !preg_match("/[0-9]+/", $pass) || !preg_match("/[a-zA-Z]+/", $pass)) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('too sample')])->send();
+        }
+
+        // 修改
+        if (!$this->accountModel->setPass($this->uid, $old, $pass)) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('fail')])->send();
+        }
+
+        return $this->response->setJsonContent(['code' => 0, 'msg' => _('success')])->send();
+    }
+
+
     public function setAction()
     {
         $data = array_filter([
