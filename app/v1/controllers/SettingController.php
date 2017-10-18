@@ -6,7 +6,7 @@ namespace MyApp\V1\Controllers;
 
 use MyApp\V1\Models\Account;
 
-class AccountController extends ControllerBase
+class SettingController extends ControllerBase
 {
     private $accountModel;
 
@@ -23,7 +23,7 @@ class AccountController extends ControllerBase
 
 
     // 设置昵称
-    public function setNameAction()
+    public function nameAction()
     {
         $name = $this->request->get('name', 'string');
         if (!$name) {
@@ -42,7 +42,7 @@ class AccountController extends ControllerBase
 
 
     // 设置密码
-    public function setPassAction()
+    public function passAction()
     {
         $old = $this->request->get('old', 'string', 'trim');
         $pass = $this->request->get('pass', 'string', 'trim');
@@ -64,7 +64,8 @@ class AccountController extends ControllerBase
     }
 
 
-    public function setAction()
+    // 设置属性
+    public function attrAction()
     {
         $data = array_filter([
             'birthday' => $this->request->get('birthday', 'string'),    // 出生
@@ -92,6 +93,12 @@ class AccountController extends ControllerBase
         }
 
         return $this->response->setJsonContent(['code' => 0, 'msg' => _('success')])->send();
+    }
+
+
+    // 系统设置
+    public function systemAction()
+    {
     }
 
 }
