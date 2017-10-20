@@ -162,6 +162,11 @@ class Post extends Model
      */
     private function pushToFeed($do = '', $uid = '', $postId = '')
     {
+        $this->di->get('component')->mq('feed', [
+            'method' => $do,
+            'uid'    => $uid,
+            'postId' => $postId,
+        ]);
     }
 
 

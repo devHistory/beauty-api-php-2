@@ -25,6 +25,18 @@ class Component
 
 
     /**
+     * 写入消息队列
+     * @param string $key
+     * @param array $data
+     */
+    public function mq($key = '', $data = [])
+    {
+        $queue = new Queue();
+        $queue->publish($key, http_build_query($data));
+    }
+
+
+    /**
      * 获取规则配置
      * @return mixed
      */
