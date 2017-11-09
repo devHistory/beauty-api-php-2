@@ -47,13 +47,13 @@ class ControllerBase extends Controller
 
         // check parameter
         if (!$timestamp || !$signature) {
-            $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
+            $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
             exit();
         }
 
         // check time
         if (abs(time() - $timestamp) > 300) {
-            $this->response->setJsonContent(['code' => 1, 'msg' => _('timeout')])->send();
+            $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_TIME')])->send();
             exit();
         }
 
@@ -61,7 +61,7 @@ class ControllerBase extends Controller
         $data = $this->request->get();
         unset($data['_url']);
         if ($signature != $this->component->createSign($data, $this->config->setting->signKey)) {
-            $this->response->setJsonContent(['code' => 1, 'msg' => _('sign error')])->send();
+            $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_SIGN')])->send();
             exit();
         }
     }
@@ -76,9 +76,9 @@ class ControllerBase extends Controller
                 $this->config->setting->signKey,
                 array('HS256')
             );
-            $this->uid = $decoded->accountId;
+            $this->uid = $decoded->id;
         } catch (Exception $e) {
-            $this->response->setJsonContent(['code' => 1, 'msg' => _('token error')])->send();
+            $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_TOKEN')])->send();
             exit();
         }
     }

@@ -154,7 +154,6 @@ class Component
                 'level'   => 1,
                 'avatar'  => 1,
                 'desc'    => 1,
-                'account' => 1,
                 'uuid'    => 1
             ];
 
