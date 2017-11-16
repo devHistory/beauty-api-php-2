@@ -37,24 +37,46 @@ $router->add(
 );
 
 
-// 多模块
+// RESTFUL API
 $router->add(
-    '/(v[0-9]+)/:controller/:action/:params',
+    '/(v[0-9]+)/:controller/:params',
     [
         'module'     => 1,
         'controller' => 2,
-        'action'     => 3,
-        'params'     => 4,
+        'action'     => 'index',
+        'params'     => 3,
     ]
-);
+)->via(['GET']);
 
 $router->add(
-    '/(v[0-9]+)/:controller',
+    '/(v[0-9]+)/:controller/:params',
     [
         'module'     => 1,
         'controller' => 2,
+        'action'     => 'create',
+        'params'     => 3,
     ]
-);
+)->via(['POST']);
+
+$router->add(
+    '/(v[0-9]+)/:controller/:params',
+    [
+        'module'     => 1,
+        'controller' => 2,
+        'action'     => 'update',
+        'params'     => 3,
+    ]
+)->via(['PUT']);
+
+$router->add(
+    '/(v[0-9]+)/:controller/:params',
+    [
+        'module'     => 1,
+        'controller' => 2,
+        'action'     => 'delete',
+        'params'     => 3,
+    ]
+)->via(['DELETE']);
 
 
 $router->setDefaultModule('v1');
