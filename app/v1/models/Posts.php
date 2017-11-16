@@ -8,7 +8,7 @@ use Phalcon\DI;
 use Phalcon\Db;
 use MongoDB\BSON\ObjectId;
 
-class Post extends Model
+class Posts extends Model
 {
 
     // 获取
@@ -24,7 +24,7 @@ class Post extends Model
 
 
     // 发表
-    public function post($uid = '', $content = '', $attach = [])
+    public function create($uid = '', $content = '', $attach = [])
     {
         if (!$uid) {
             return false;
@@ -57,7 +57,7 @@ class Post extends Model
 
 
     // TODO :: trash软删除
-    public function deletePost($uid = '', $postId = '')
+    public function delete($uid = '', $postId = '')
     {
         if (!$post = $this->getPost($postId)) {
             return false;

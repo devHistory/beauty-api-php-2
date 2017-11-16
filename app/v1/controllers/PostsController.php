@@ -4,71 +4,23 @@
 namespace MyApp\V1\Controllers;
 
 
-use MyApp\V1\Models\Post;
+use MyApp\V1\Models\Posts;
 
 class PostsController extends ControllerBase
 {
 
-    private $postModel;
+    private $postsModel;
 
 
     public function initialize()
     {
         parent::initialize();
-        $this->postModel = new Post();
+        $this->postsModel = new Posts();
     }
 
 
-    // 发表
+    // TODO :: 查看
     public function indexAction()
-    {
-        $type = $this->request->get('type', 'alphanum', 'text');
-        $content = $this->request->get('content', 'string', '');
-        $files = $this->request->get('files');
-        $locale = $this->request->get('locale', 'string', '');
-        $hidden = (int)$this->request->get('hidden');
-        $anonymous = (int)$this->request->get('anonymous');
-
-        // 检查
-        if ($type == 'text' && !$content) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
-        }
-        if ($type != 'text' && !$files) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
-        }
-        if (!in_array($type, ['text', 'picture', 'voice', 'video'])) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
-        }
-
-        // 属性
-        $attach = [];
-        if ($locale) {
-            $attach['locale'] = $locale;
-            $attach['hidden'] = $hidden ? 1 : 0;
-        }
-        if ($files && $type != 'text') {
-            $attach += [$type => $files];
-        }
-        if ($anonymous) {
-            $attach += ['anonymous' => 1];
-        }
-
-
-        // 发布
-        if (!$postId = $this->postModel->post($this->uid, $content, $attach)) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('FAI_POST')])->send();
-        }
-
-        return $this->response->setJsonContent([
-            'code' => 0,
-            'msg'  => _('SUCCESS'),
-            'data' => $postId
-        ])->send();
-    }
-
-
-    // 查看
-    public function viewAction()
     {
         $postId = $this->request->get('postId', 'alphanum');
         if (!$postId) {
@@ -76,13 +28,13 @@ class PostsController extends ControllerBase
         }
 
         // get data
-        if (!$post = $this->postModel->getPost($postId)) {
+        if (!$post = $this->postsModel->getPost($postId)) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('no data')])->send();
         }
 
         // add viewer
         if ($post['uid'] != $this->uid) {
-            $this->postModel->addViewer($postId, $this->uid);
+            $this->postsModel->addViewer($postId, $this->uid);
         }
 
         // 合并数据
@@ -124,21 +76,76 @@ class PostsController extends ControllerBase
     }
 
 
-    // 删除
-    public function deleteAction()
+    // 发表
+    public function createAction()
     {
-        $postId = $this->request->get('postId', 'alphanum');
-        if (!$postId) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
+        $type = $this->request->getPost('type', 'alphanum', 'text');
+        $content = $this->request->getPost('content', 'string', '');
+        $files = $this->request->getPost('files');
+        $locale = $this->request->getPost('locale', 'string', '');
+        $hidden = (int)$this->request->getPost('hidden');
+        $anonymous = (int)$this->request->getPost('anonymous');
+
+        // 检查
+        if ($type == 'text' && !$content) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
+        }
+        if ($type != 'text' && !$files) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
+        }
+        if (!in_array($type, ['text', 'picture', 'voice', 'video'])) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
         }
 
-        if (!$this->postModel->deletePost($this->uid, $postId)) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('fail')])->send();
+        // 属性
+        $attach = [];
+        if ($locale) {
+            $attach['locale'] = $locale;
+            $attach['hidden'] = $hidden ? 1 : 0;
+        }
+        if ($files && $type != 'text') {
+            $attach += [$type => $files];
+        }
+        if ($anonymous) {
+            $attach += ['anonymous' => 1];
+        }
+
+
+        // 发布
+        if (!$postId = $this->postsModel->create($this->uid, $content, $attach)) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('FAI_POST')])->send();
         }
 
         return $this->response->setJsonContent([
             'code' => 0,
-            'msg'  => _('success')
+            'msg'  => _('SUCCESS'),
+            'data' => $postId
+        ])->send();
+    }
+
+
+    // 更新
+    public function updateAction()
+    {
+    }
+
+
+    // 删除
+    public function deleteAction()
+    {
+        if (!$this->dispatcher->getParams()) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
+        }
+        $postId = $this->dispatcher->getParams()['0'];
+
+
+        if (!$this->postsModel->delete($this->uid, $postId)) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('FAI_DELETE')])->send();
+        }
+
+        return $this->response->setJsonContent([
+            'code' => 0,
+            'msg'  => _('SUCCESS')
         ])->send();
     }
 
