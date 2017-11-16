@@ -17,7 +17,7 @@ class Post extends Model
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
 
-        return $mongodb->$db->post->findOne([
+        return $mongodb->$db->posts->findOne([
             '_id' => new ObjectId($postId)
         ]);
     }
@@ -41,10 +41,10 @@ class Post extends Model
                 'content' => $content,
             ];
             $postData = $postData + $attach;
-            $mongodb->$db->post->insertOne($postData);
+            $mongodb->$db->posts->insertOne($postData);
 
-            // push
-            if (empty($postData['nobody'])) {
+            // 非匿名内容则推送
+            if (empty($postData['anonymous'])) {
                 $this->pushToTimeline('add', $uid, $postData);
                 $this->pushToFeed('add', $uid, $id->__toString());
             }
@@ -79,7 +79,7 @@ class Post extends Model
         }
 
         // 删主题
-        $mongodb->$db->post->deleteOne([
+        $mongodb->$db->posts->deleteOne([
             '_id' => new ObjectId($postId)
         ]);
 
@@ -98,14 +98,14 @@ class Post extends Model
         $id = new ObjectId($postId);
 
         // update mongodb
-        $mongodb->$db->post->updateOne(
+        $mongodb->$db->posts->updateOne(
             ['_id' => $id],
             [
                 '$inc'      => ['view' => 1],
                 '$addToSet' => ['viewList' => $uid]
             ]
         );
-        $mongodb->$db->post->updateOne(
+        $mongodb->$db->posts->updateOne(
             ['_id' => $id],
             [
                 '$push' => ['viewList' => ['$each' => [], '$slice' => -20]]

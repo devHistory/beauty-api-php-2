@@ -19,7 +19,7 @@ class Comment extends Model
 
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
-        $mongodb->$db->post->updateOne(
+        $mongodb->$db->posts->updateOne(
             ['_id' => new ObjectId($postId)],
             [
                 '$inc'  => ['comment' => 1],
@@ -71,7 +71,7 @@ class Comment extends Model
         }
 
         // update post
-        $mongodb->$db->post->updateOne(
+        $mongodb->$db->posts->updateOne(
             ['_id' => new ObjectId($comment->postId)],
             [
                 '$inc'  => ['comment' => -1],

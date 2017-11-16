@@ -6,7 +6,7 @@ namespace MyApp\V1\Controllers;
 
 use MyApp\V1\Models\Post;
 
-class PostController extends ControllerBase
+class PostsController extends ControllerBase
 {
 
     private $postModel;
@@ -24,44 +24,45 @@ class PostController extends ControllerBase
     {
         $type = $this->request->get('type', 'alphanum', 'text');
         $content = $this->request->get('content', 'string', '');
-        $file = $this->request->get('file');
-        $location = $this->request->get('location', 'string', '');
-        $locationShow = (int)$this->request->get('locationShow');
-        $nobody = (int)$this->request->get('nobody');
+        $files = $this->request->get('files');
+        $locale = $this->request->get('locale', 'string', '');
+        $hidden = (int)$this->request->get('hidden');
+        $anonymous = (int)$this->request->get('anonymous');
 
-        // check
-        if ($type == 'text' && (!$content || $file)) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
+        // 检查
+        if ($type == 'text' && !$content) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
         }
-        if ($type != 'text' && !$file) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
+        if ($type != 'text' && !$files) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
         }
         if (!in_array($type, ['text', 'picture', 'voice', 'video'])) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
         }
 
-        // attach
+        // 属性
         $attach = [];
-        if ($location) {
-            $attach['location'] = $location;
-            $attach['locationShow'] = $locationShow ? 1 : 0;
+        if ($locale) {
+            $attach['locale'] = $locale;
+            $attach['hidden'] = $hidden ? 1 : 0;
         }
-        if ($file) {
-            $attach += [$type => $file];
+        if ($files && $type != 'text') {
+            $attach += [$type => $files];
         }
-        if ($nobody) {
-            $attach += ['nobody' => 1];
+        if ($anonymous) {
+            $attach += ['anonymous' => 1];
         }
 
-        // post
-        if (!$result = $this->postModel->post($this->uid, $content, $attach)) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('post error')])->send();
+
+        // 发布
+        if (!$postId = $this->postModel->post($this->uid, $content, $attach)) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('FAI_POST')])->send();
         }
 
         return $this->response->setJsonContent([
             'code' => 0,
-            'msg'  => _('success'),
-            'data' => $result
+            'msg'  => _('SUCCESS'),
+            'data' => $postId
         ])->send();
     }
 

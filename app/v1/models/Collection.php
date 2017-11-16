@@ -17,7 +17,7 @@ class Collection extends Model
         $db = $this->di['config']->mongodb->db;
 
         if ($type == 'post') {
-            $data = $mongodb->$db->post->findOne(
+            $data = $mongodb->$db->posts->findOne(
                 ['_id' => new ObjectId($id)],
                 [
                     'projection' => [
