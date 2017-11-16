@@ -11,17 +11,17 @@ class InitController extends ControllerBase
 {
 
 
-    public function indexAction()
+    public function updateAction()
     {
         $accountModel = new Account();
         $syncData = [
-            'uuid'    => $this->request->get('uuid'),
-            'adid'    => $this->request->get('adid'),
-            'lat'     => $this->request->get('lat'),
-            'lng'     => $this->request->get('lng'),
-            'os'      => $this->request->get('os'),
-            'model'   => $this->request->get('model'),
-            'channel' => $this->request->get('channel'),
+            'uuid'    => $this->request->getPut('uuid'),
+            'adid'    => $this->request->getPut('adid'),
+            'lat'     => $this->request->getPut('lat'),
+            'lng'     => $this->request->getPut('lng'),
+            'os'      => $this->request->getPut('os'),
+            'model'   => $this->request->getPut('model'),
+            'channel' => $this->request->getPut('channel'),
             'ip'      => $this->request->getClientAddress(),
             'login'   => time(),
         ];
@@ -65,5 +65,6 @@ class InitController extends ControllerBase
             ]
         ])->send();
     }
+
 
 }
