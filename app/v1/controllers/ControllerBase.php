@@ -42,7 +42,7 @@ class ControllerBase extends Controller
 
     private function check()
     {
-        $timestamp = $this->request->get('time');
+        $timestamp = $this->request->getHeader('time');
         $signature = $this->request->getHeader('sign');
 
         // check parameter
@@ -58,9 +58,18 @@ class ControllerBase extends Controller
         }
 
         // check signature
-        $data = $this->request->get();
-        unset($data['_url']);
-        if ($signature != $this->component->createSign($data, $this->config->setting->signKey)) {
+        $header = array_filter([
+            'app'     => $this->request->getHeader('app'),
+            'version' => $this->request->getHeader('version'),
+            'lang'    => $this->request->getHeader('lang'),
+            'time'    => $this->request->getHeader('time'),
+            'token'   => $this->request->getHeader('token')
+        ]);
+        ksort($header);
+        $authData = http_build_query($header) . $_SERVER['REQUEST_METHOD'] . $_SERVER['REQUEST_URI'] . md5(file_get_contents("php://input"));
+        $authorization = base64_encode(hash_hmac('sha1', $authData, $this->config->setting->signKey, true));
+        unset($header, $authData);
+        if ($signature != $authorization) {
             $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_SIGN')])->send();
             exit();
         }
