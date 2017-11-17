@@ -22,7 +22,7 @@ class Comment extends Model
         $mongodb->$db->posts->updateOne(
             ['_id' => new ObjectId($postId)],
             [
-                '$inc'  => ['comment' => 1],
+                '$inc'  => ['commentNum' => 1],
                 '$push' => [
                     'commentList' => [
                         'cmtId'      => $this->createComment($postId, $content, $uid),

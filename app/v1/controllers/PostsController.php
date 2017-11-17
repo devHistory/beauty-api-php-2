@@ -19,42 +19,41 @@ class PostsController extends ControllerBase
     }
 
 
-    // TODO :: 查看
+    // 查看
     public function indexAction()
     {
-        $postId = $this->request->get('postId', 'alphanum');
-        if (!$postId) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
+        $argv = $this->dispatcher->getParams();
+        if (!$argv) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_URI')])->send();
         }
+        $postId = $argv['0'];
 
-        // get data
-        if (!$post = $this->postsModel->getPost($postId)) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('no data')])->send();
+        // 获取
+        if (!$posts = $this->postsModel->get($postId)) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_NO_DATA')])->send();
         }
-
-        // add viewer
-        if ($post['uid'] != $this->uid) {
+        // 预览记录
+        if ($posts['uid'] != $this->uid) {
             $this->postsModel->addViewer($postId, $this->uid);
         }
 
-        // 合并数据
-        $data = $this->component->fillUserFromCache($post->uid, ['name', 'gender', 'level', 'avatar']);
+        // 合并用户数据
+        $data = $this->component->fillUserFromCache($posts->uid, ['name', 'gender', 'level', 'avatar']);
         $data['postId'] = $postId;
-        foreach ($post as $k => $info) {
+        foreach ($posts as $k => $info) {
             if (isset($data[$k])) {
                 continue;
             }
             $data[$k] = $info;
         }
-        unset($post, $data['_id']);
+        unset($posts, $data['_id']);
 
         // 匿名隐藏
-        if (!empty($data['nobody'])) {
+        if (!empty($data['anonymous'])) {
             $data['uid'] = '';
             $data['name'] = '匿名用户';
             $data['avatar'] = '';
         }
-
         // 评论列表
         if (isset($data['commentList'])) {
             $data['commentList'] = $this->component->fillUserByKey(
@@ -70,7 +69,7 @@ class PostsController extends ControllerBase
         // 返回
         return $this->response->setJsonContent([
             'code' => 0,
-            'msg'  => _('success'),
+            'msg'  => _('SUCCESS'),
             'data' => $data
         ])->send();
     }

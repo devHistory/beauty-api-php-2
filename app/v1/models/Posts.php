@@ -12,7 +12,7 @@ class Posts extends Model
 {
 
     // 获取
-    public function getPost($postId = '')
+    public function get($postId = '')
     {
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
@@ -101,7 +101,7 @@ class Posts extends Model
         $mongodb->$db->posts->updateOne(
             ['_id' => $id],
             [
-                '$inc'      => ['view' => 1],
+                '$inc'      => ['viewNum' => 1],
                 '$addToSet' => ['viewList' => $uid]
             ]
         );
