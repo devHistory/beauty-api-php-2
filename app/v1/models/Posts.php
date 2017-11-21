@@ -59,7 +59,7 @@ class Posts extends Model
     // TODO :: trash软删除
     public function delete($uid = '', $postId = '')
     {
-        if (!$post = $this->getPost($postId)) {
+        if (!$post = $this->get($postId)) {
             return false;
         }
 
@@ -72,9 +72,9 @@ class Posts extends Model
         $db = $this->di['config']->mongodb->db;
 
         // 删评论
-        if (isset($post->comment)) {
-            foreach ($post->comment as $cmt) {
-                $mongodb->$db->comment->deleteOne(['_id' => new ObjectId($cmt->cmtId)]);
+        if (isset($post->commentList)) {
+            foreach ($post->commentList as $comment) {
+                $mongodb->$db->comments->deleteOne(['_id' => new ObjectId($comment->cid)]);
             }
         }
 
@@ -131,14 +131,14 @@ class Posts extends Model
 
         switch ($do) {
             case 'add':
-                $pushData['postId'] = $postData['_id']->__toString();
+                $pushData['pid'] = $postData['_id']->__toString();
                 unset($postData['_id'], $postData['uid']);
                 $pushData += $postData;
                 return $mongodb->$db->timeline->updateOne(
                     ['_id' => new ObjectId($uid)],
                     [
-                        '$push'        => ['post' => $pushData],
-                        '$currentDate' => ['modifyTime' => true],
+                        '$push'        => ['posts' => $pushData],
+                        '$currentDate' => ['modify' => true],
                     ],
                     ['upsert' => true]
                 );
@@ -147,8 +147,8 @@ class Posts extends Model
                 return $mongodb->$db->timeline->updateOne(
                     ['_id' => new ObjectId($uid)],
                     [
-                        '$pull'        => ['post' => ['postId' => $postData]],
-                        '$currentDate' => ['modifyTime' => true],
+                        '$pull'        => ['posts' => ['pid' => $postData]],
+                        '$currentDate' => ['modify' => true],
                     ]
                 );
         }
@@ -165,7 +165,7 @@ class Posts extends Model
         $this->di->get('component')->mq('feed', [
             'method' => $do,
             'uid'    => $uid,
-            'postId' => $postId,
+            'pid'    => $postId,
         ]);
     }
 
