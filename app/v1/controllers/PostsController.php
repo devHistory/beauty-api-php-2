@@ -19,14 +19,20 @@ class PostsController extends ControllerBase
     }
 
 
-    // 查看
     public function indexAction()
     {
-        $argv = $this->dispatcher->getParams();
-        if (!$argv) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_URI')])->send();
+        $do = $this->dispatcher->getParam('do');
+        $this->$do();
+    }
+
+
+    // 查看
+    private function get()
+    {
+        $postId = $this->dispatcher->getParam('argv');
+        if (!$postId) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
         }
-        $postId = $argv['0'];
 
         // 获取
         if (!$posts = $this->postsModel->get($postId)) {
@@ -76,7 +82,7 @@ class PostsController extends ControllerBase
 
 
     // 发表
-    public function createAction()
+    private function create()
     {
         $type = $this->request->getPost('type', 'alphanum', 'text');
         $content = $this->request->getPost('content', 'string', '');
@@ -124,19 +130,18 @@ class PostsController extends ControllerBase
 
 
     // 更新
-    public function updateAction()
+    private function update()
     {
     }
 
 
     // 删除
-    public function deleteAction()
+    private function delete()
     {
-        if (!$this->dispatcher->getParams()) {
+        $postId = $this->dispatcher->getParam('argv');
+        if (!$postId) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
         }
-        $postId = $this->dispatcher->getParams()['0'];
-
 
         if (!$this->postsModel->delete($this->uid, $postId)) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('FAI_DELETE')])->send();
