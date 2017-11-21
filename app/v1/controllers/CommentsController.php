@@ -19,8 +19,15 @@ class CommentsController extends ControllerBase
     }
 
 
+    public function indexAction()
+    {
+        $do = $this->dispatcher->getParam('do');
+        $this->$do();
+    }
+
+
     // 发表
-    public function createAction()
+    private function create()
     {
         $postId = $this->request->get('pid', 'alphanum');
         $content = $this->request->get('content', 'string');
@@ -37,19 +44,13 @@ class CommentsController extends ControllerBase
     }
 
 
-    // 回复
-    public function replyAction()
-    {
-    }
-
-
     // 删除
-    public function deleteAction()
+    private function delete()
     {
-        if (!$this->dispatcher->getParams()) {
+        $commentId = $this->dispatcher->getParam('argv');
+        if (!$commentId) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('MIS_ARGV')])->send();
         }
-        $commentId = $this->dispatcher->getParams()['0'];
 
         if (!$this->commentsModel->deleteComment($commentId, $this->uid)) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('FAI_DELETE')])->send();
