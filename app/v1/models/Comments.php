@@ -8,10 +8,10 @@ use Phalcon\DI;
 use Phalcon\Db;
 use MongoDB\BSON\ObjectId;
 
-class Comment extends Model
+class Comments extends Model
 {
 
-    public function postComment($postId = '', $content = '', $uid = '')
+    public function create($postId = '', $content = '', $uid = '')
     {
         if (!$postId || !$content || !$uid) {
             return false;
@@ -25,10 +25,10 @@ class Comment extends Model
                 '$inc'  => ['commentNum' => 1],
                 '$push' => [
                     'commentList' => [
-                        'cmtId'      => $this->createComment($postId, $content, $uid),
-                        'uid'        => $uid,
-                        'content'    => $content,
-                        'createTime' => time(),
+                        'cid'     => $this->createComment($postId, $content, $uid),
+                        'uid'     => $uid,
+                        'content' => $content,
+                        'create'  => time(),
                     ]
                 ],
             ]
@@ -42,24 +42,24 @@ class Comment extends Model
         $id = new ObjectId();
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
-        $mongodb->$db->comment->insertOne([
+        $mongodb->$db->comments->insertOne([
             '_id'     => $id,
             'uid'     => $uid,
-            'postId'  => $postId,
+            'pid'     => $postId,
             'content' => $content
         ]);
         return $id->__toString();
     }
 
 
-    public function deleteComment($cmtId = '', $uid = '')
+    public function deleteComment($commentId = '', $uid = '')
     {
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
 
         // find comment
-        $comment = $mongodb->$db->comment->findOne([
-            '_id' => new ObjectId($cmtId)
+        $comment = $mongodb->$db->comments->findOne([
+            '_id' => new ObjectId($commentId)
         ]);
 
         // check
@@ -72,15 +72,15 @@ class Comment extends Model
 
         // update post
         $mongodb->$db->posts->updateOne(
-            ['_id' => new ObjectId($comment->postId)],
+            ['_id' => new ObjectId($comment->pid)],
             [
-                '$inc'  => ['comment' => -1],
-                '$pull' => ['commentList' => ['cmtId' => $cmtId]]
+                '$inc'  => ['commentNum' => -1],
+                '$pull' => ['commentList' => ['cid' => $commentId]]
             ]
         );
 
         // delete comment
-        $mongodb->$db->comment->deleteOne(['_id' => new ObjectId($cmtId)]);
+        $mongodb->$db->comments->deleteOne(['_id' => new ObjectId($commentId)]);
 
         return true;
     }
