@@ -19,20 +19,21 @@ class CollectionController extends ControllerBase
     }
 
 
-    public function indexAction()
+    // 列表
+    protected function get()
     {
         $type = $this->request->get('type', 'alphanum');
 
-        if (!in_array($type, ['post'])) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
+        if (!in_array($type, ['posts'])) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
         }
 
-        $data = $this->collectionModel->listCollection($type, $this->uid);
+        $data = $this->collectionModel->get($type, $this->uid);
         $data = $this->component->fillUserByKey($data[$type], 'uid', ['name']);
 
         return $this->response->setJsonContent([
             'code' => 0,
-            'msg'  => _('success'),
+            'msg'  => _('SUCCESS'),
             'data' => [
                 'count' => count($data),
                 'list'  => $data
@@ -42,49 +43,49 @@ class CollectionController extends ControllerBase
 
 
     // 收藏
-    public function addAction()
+    protected function create()
     {
         $id = $this->request->get('id', 'alphanum');
         $type = $this->request->get('type', 'alphanum');
 
         // check
-        if (!$id || !$type || !in_array($type, ['post'])) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
+        if (!$id || !$type || !in_array($type, ['posts'])) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
         }
 
         // add
-        if (!$this->collectionModel->addCollection($type, $id, $this->uid)) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('fail')])->send();
+        if (!$this->collectionModel->create($type, $id, $this->uid)) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('FAI')])->send();
         }
 
         // return
         return $this->response->setJsonContent([
             'code' => 0,
-            'msg'  => _('success'),
+            'msg'  => _('SUCCESS'),
         ])->send();
     }
 
 
     // 取消收藏
-    public function deleteAction()
+    protected function delete()
     {
-        $id = $this->request->get('id', 'alphanum');
-        $type = $this->request->get('type', 'alphanum');
+        $id = $this->dispatcher->getParam('argv');
+        $type = $this->request->getPut('type', 'alphanum');
 
         // check
-        if (!$id || !$type || !in_array($type, ['post'])) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('parameter error')])->send();
+        if (!$id || !$type || !in_array($type, ['posts'])) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
         }
 
         // delete
-        if (!$this->collectionModel->deleteCollection($type, $id, $this->uid)) {
-            return $this->response->setJsonContent(['code' => 1, 'msg' => _('fail')])->send();
+        if (!$this->collectionModel->delete($type, $id, $this->uid)) {
+            return $this->response->setJsonContent(['code' => 1, 'msg' => _('FAIL')])->send();
         }
 
         // return
         return $this->response->setJsonContent([
             'code' => 0,
-            'msg'  => _('success'),
+            'msg'  => _('SUCCESS'),
         ])->send();
     }
 

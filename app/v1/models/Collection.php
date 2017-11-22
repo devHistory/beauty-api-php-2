@@ -11,12 +11,12 @@ use MongoDB\BSON\ObjectId;
 class Collection extends Model
 {
 
-    public function addCollection($type = '', $id = '', $uid = '')
+    public function create($type = '', $id = '', $uid = '')
     {
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
 
-        if ($type == 'post') {
+        if ($type == 'posts') {
             $data = $mongodb->$db->posts->findOne(
                 ['_id' => new ObjectId($id)],
                 [
@@ -34,20 +34,20 @@ class Collection extends Model
         if (!$data) {
             return false;
         }
-        $data['id'] = $id;
+        $insertData = ['id' => $id] + (array)$data;
 
         return $mongodb->$db->collection->updateOne(
             ['_id' => new ObjectId($uid)],
             [
-                '$addToSet'    => [$type => $data],
-                '$currentDate' => ['modifyTime' => true],
+                '$addToSet'    => [$type => $insertData],
+                '$currentDate' => ['modify' => true],
             ],
             ['upsert' => true]
         );
     }
 
 
-    public function deleteCollection($type = '', $id = '', $uid = '')
+    public function delete($type = '', $id = '', $uid = '')
     {
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
@@ -56,14 +56,14 @@ class Collection extends Model
             ['_id' => new ObjectId($uid)],
             [
                 '$pull'        => [$type => ['id' => $id]],
-                '$currentDate' => ['modifyTime' => true],
+                '$currentDate' => ['modify' => true],
             ]
         );
     }
 
 
     // TODO :: 分页
-    public function listCollection($type = '', $uid = '')
+    public function get($type = '', $uid = '')
     {
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
