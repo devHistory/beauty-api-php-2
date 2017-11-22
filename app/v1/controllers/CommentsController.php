@@ -19,15 +19,8 @@ class CommentsController extends ControllerBase
     }
 
 
-    public function indexAction()
-    {
-        $do = $this->dispatcher->getParam('do');
-        $this->$do();
-    }
-
-
     // 发表
-    private function create()
+    protected function create()
     {
         $postId = $this->request->get('pid', 'alphanum');
         $content = $this->request->get('content', 'string');
@@ -45,7 +38,7 @@ class CommentsController extends ControllerBase
 
 
     // 删除
-    private function delete()
+    protected function delete()
     {
         $commentId = $this->dispatcher->getParam('argv');
         if (!$commentId) {

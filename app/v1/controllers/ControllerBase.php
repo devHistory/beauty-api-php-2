@@ -35,6 +35,13 @@ class ControllerBase extends Controller
     }
 
 
+    public function indexAction()
+    {
+        $do = $this->dispatcher->getParam('do');
+        $this->$do();
+    }
+
+
     public function afterExecuteRoute(Dispatcher $dispatcher)
     {
     }

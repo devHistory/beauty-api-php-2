@@ -19,15 +19,8 @@ class PostsController extends ControllerBase
     }
 
 
-    public function indexAction()
-    {
-        $do = $this->dispatcher->getParam('do');
-        $this->$do();
-    }
-
-
     // 查看
-    private function get()
+    protected function get()
     {
         $postId = $this->dispatcher->getParam('argv');
         if (!$postId) {
@@ -82,7 +75,7 @@ class PostsController extends ControllerBase
 
 
     // 发表
-    private function create()
+    protected function create()
     {
         $type = $this->request->getPost('type', 'alphanum', 'text');
         $content = $this->request->getPost('content', 'string', '');
@@ -130,13 +123,13 @@ class PostsController extends ControllerBase
 
 
     // 更新
-    private function update()
+    protected function update()
     {
     }
 
 
     // 删除
-    private function delete()
+    protected function delete()
     {
         $postId = $this->dispatcher->getParam('argv');
         if (!$postId) {

@@ -11,7 +11,7 @@ class InitController extends ControllerBase
 {
 
 
-    public function updateAction()
+    protected function update()
     {
         $accountModel = new Account();
         $syncData = [
