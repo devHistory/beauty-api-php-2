@@ -8,7 +8,7 @@ use Phalcon\DI;
 use Phalcon\Db;
 use MongoDB\BSON\ObjectId;
 
-class Collection extends Model
+class Favorites extends Model
 {
 
     public function create($type = '', $id = '', $uid = '')
@@ -36,7 +36,7 @@ class Collection extends Model
         }
         $insertData = ['id' => $id] + (array)$data;
 
-        return $mongodb->$db->collection->updateOne(
+        return $mongodb->$db->favorites->updateOne(
             ['_id' => new ObjectId($uid)],
             [
                 '$addToSet'    => [$type => $insertData],
@@ -52,7 +52,7 @@ class Collection extends Model
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
 
-        return $mongodb->$db->collection->updateOne(
+        return $mongodb->$db->favorites->updateOne(
             ['_id' => new ObjectId($uid)],
             [
                 '$pull'        => [$type => ['id' => $id]],
@@ -68,7 +68,7 @@ class Collection extends Model
         $mongodb = $this->di['mongodb'];
         $db = $this->di['config']->mongodb->db;
 
-        $data = $mongodb->$db->collection->findOne(
+        $data = $mongodb->$db->favorites->findOne(
             ['_id' => new ObjectId($uid)],
             [
                 'projection' => [$type => 1, '_id' => 0],

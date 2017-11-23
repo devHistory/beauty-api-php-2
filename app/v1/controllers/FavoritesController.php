@@ -4,18 +4,18 @@
 namespace MyApp\V1\Controllers;
 
 
-use MyApp\V1\Models\Collection;
+use MyApp\V1\Models\Favorites;
 
-class CollectionController extends ControllerBase
+class FavoritesController extends ControllerBase
 {
 
-    private $collectionModel;
+    private $favoritesModel;
 
 
     public function initialize()
     {
         parent::initialize();
-        $this->collectionModel = new Collection();
+        $this->favoritesModel = new Favorites();
     }
 
 
@@ -28,7 +28,13 @@ class CollectionController extends ControllerBase
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('ERR_ARGV')])->send();
         }
 
-        $data = $this->collectionModel->get($type, $this->uid);
+        $data = $this->favoritesModel->get($type, $this->uid);
+        if (!$data) {
+            return $this->response->setJsonContent([
+                'code' => 1,
+                'msg'  => _('ERR_NO_DATA')
+            ])->send();
+        }
         $data = $this->component->fillUserByKey($data[$type], 'uid', ['name']);
 
         return $this->response->setJsonContent([
@@ -54,7 +60,7 @@ class CollectionController extends ControllerBase
         }
 
         // add
-        if (!$this->collectionModel->create($type, $id, $this->uid)) {
+        if (!$this->favoritesModel->create($type, $id, $this->uid)) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('FAI')])->send();
         }
 
@@ -78,7 +84,7 @@ class CollectionController extends ControllerBase
         }
 
         // delete
-        if (!$this->collectionModel->delete($type, $id, $this->uid)) {
+        if (!$this->favoritesModel->delete($type, $id, $this->uid)) {
             return $this->response->setJsonContent(['code' => 1, 'msg' => _('FAIL')])->send();
         }
 
