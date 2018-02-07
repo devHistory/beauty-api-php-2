@@ -32,9 +32,10 @@ class Module implements ModuleDefinitionInterface
      */
     public function registerServices(DiInterface $di)
     {
-        $di->set('dispatcher', function () {
+        $di->set('dispatcher', function () use ($di) {
             $dispatcher = new Dispatcher();
             $dispatcher->setDefaultNamespace('MyApp\V1\Controllers');
+            $dispatcher->setEventsManager($di['eventsManager']);
             return $dispatcher;
         }, true);
 
@@ -44,7 +45,7 @@ class Module implements ModuleDefinitionInterface
             $view->registerEngines([
                 '.phtml' => function ($view, $di) {
                     $volt = new Volt($view, $di);
-                    $volt->setOptions(['compiledPath' => BASE_DIR . '/running/cache/']);
+                    $volt->setOptions(['compiledPath' => ROOT_DIR . '/storage/cache/']);
                     return $volt;
                 }
             ]);

@@ -2,6 +2,9 @@
 
 
 use Phalcon\Logger;
+use Phalcon\Dispatcher;
+use Phalcon\Events\Event;
+use Phalcon\Mvc\Dispatcher\Exception as DispatchException;
 
 
 ini_set("date.timezone", $di['config']->setting->timezone);
@@ -19,12 +22,41 @@ switch ($di['config']->setting->sandbox) {
 
 
 if ($di['config']->setting->logs) {
-    if (!isset($_REQUEST['_url'])) {
-        $_REQUEST['_url'] = '/';
-    }
-    $_url = $_REQUEST['_url'];
-    unset($_REQUEST['_url']);
-    $log = $_SERVER['REQUEST_METHOD'] . ' ';
-    $log .= empty($_REQUEST) ? $_url : ($_url . '?' . urldecode(http_build_query($_REQUEST)));
+    $separator = strpos($_SERVER['REQUEST_URI'], '?') ? '&' : '?';
+    $log = $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'];
+    $log .= file_get_contents("php://input") ? $separator . file_get_contents("php://input") : '';
     $di->get('logger', [date('Ym')])->log($log, Logger::INFO);
 }
+
+
+$di['eventsManager']->attach('db', function ($event, $connection) use ($di) {
+    if ($event->getType() == 'beforeQuery') {
+        if ($di['config']->setting->logs) {
+            $di->get('logger', ['SQL' . date('Ymd')])->log($connection->getSQLStatement());
+        }
+        if (preg_match('/drop|alter/i', $connection->getSQLStatement())) {
+            return false;
+        }
+    }
+});
+
+
+$di['eventsManager']->attach(
+    'dispatch:beforeException',
+    function (Event $event, $dispatcher, Exception $exception) use ($di) {
+        if ($di['config']->setting->sandbox) {
+            return true;
+        }
+        if ($exception instanceof DispatchException) {
+        }
+        switch ($exception->getCode()) {
+            case Dispatcher::EXCEPTION_HANDLER_NOT_FOUND:
+            case Dispatcher::EXCEPTION_ACTION_NOT_FOUND:
+                $dispatcher->forward([
+                    'controller' => 'public',
+                    'action'     => 'notFound',
+                ]);
+                return false;
+        }
+    }
+);

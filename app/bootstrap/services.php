@@ -12,10 +12,12 @@ use Phalcon\DI\FactoryDefault,
     Phalcon\Http\Response\Cookies,
     Phalcon\Events\Manager as EventsManager,
     Phalcon\Logger\Adapter\File as FileLogger,
+    Phalcon\Logger\Formatter\Line,
     Phalcon\Cache\Frontend\Data as FrontData,
     Phalcon\Cache\Backend\File as FileCache,
     Phalcon\Cache\Backend\Redis as RedisCache,
     MyApp\Services\Component,
+    MyApp\Services\Locale,
     Symfony\Component\Yaml\Yaml as SFYaml,
     MongoDB\Client as MongoDBClient;
 
@@ -37,7 +39,8 @@ $di->set('router', function () {
 
 
 $di->set('logger', function ($file = null) {
-    $logger = new FileLogger(BASE_DIR . '/running/logs/' . ($file ? $file : date('Ymd')));
+    $logger = new FileLogger(ROOT_DIR . '/storage/logs/' . ($file ? $file : date('Ymd')));
+    $logger->setFormatter(new Line("[%date%][%type%] %message%", 'Y-m-d H:i:s O'));
     return $logger;
 }, false);
 
@@ -50,9 +53,15 @@ $di->set('crypt', function () use ($di) {
 
 
 $di->set('session', function () {
+    ini_set('session.save_path', ROOT_DIR . '/storage/sessions/');
     $session = new SessionAdapter();
     $session->start();
     return $session;
+}, true);
+
+
+$di->set('locale', function () {
+    return new Locale();
 }, true);
 
 
@@ -78,20 +87,8 @@ $di->set('modelsCache', function () use ($di) {
             'prefix' => 'cache|',
         ]);
     }
-    return new FileCache($frontCache, ['cacheDir' => BASE_DIR . '/running/cache/', 'prefix' => 'cache_']);
+    return new FileCache($frontCache, ['cacheDir' => ROOT_DIR . '/storage/cache/', 'prefix' => 'cache_']);
 }, true);
-
-
-$di['eventsManager']->attach('db', function ($event, $connection) use ($di) {
-    if ($event->getType() == 'beforeQuery') {
-        if ($di['config']->setting->logs) {
-            $di->get('logger', ['SQL' . date('Ymd')])->log($connection->getSQLStatement());
-        }
-        if (preg_match('/drop|alter/i', $connection->getSQLStatement())) {
-            return false;
-        }
-    }
-});
 
 
 $di->set('component', function () use ($di) {
